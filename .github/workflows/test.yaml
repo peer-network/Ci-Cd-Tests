@@ -28,5 +28,5 @@ jobs:
          if: always()
          uses: actions/upload-artifact@v4
          with:
-           name: coverage-reports-${{ github.run_id }}-${{ github.job }}-${{ github.sha }}
+           name: coverage-reports-${{ github.run_id }}-${{ github.job }}-${{ matrix.node-version }}
            path: coverage/
