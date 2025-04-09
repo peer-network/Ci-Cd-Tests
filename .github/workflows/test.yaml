@@ -1,7 +1,11 @@
 name: Test
 
 on:
-  workflow_dispatch
+  pull_request:
+    branches:
+      - main
+      - Wisdom/init/ci-stuff
+  workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -28,5 +32,5 @@ jobs:
          if: always()
          uses: actions/upload-artifact@v4
          with:
-           name: coverage-reports
+           name: coverage-reports-${{ github.run_id }}-${{ github.job }}-${{ matrix.node-version }}
            path: coverage/
