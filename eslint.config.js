@@ -17,7 +17,7 @@ export default [
       'prettier/prettier': [
         'error',
         {
-          singleQuote: true,
+          singleQuote: false,
           semi: true,
           tabWidth: 2,
           trailingComma: 'es5',
@@ -26,7 +26,7 @@ export default [
       'no-unused-vars': 'warn',
       'no-console': 'off',
       semi: ['error', 'always'],
-      quotes: ['error', 'single'],
+      quotes: ['error', 'double'],
     },
   },
 ];
