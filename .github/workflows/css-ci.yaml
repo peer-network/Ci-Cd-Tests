@@ -1,0 +1,136 @@
+name: CI For Css
+
+on:
+  workflow_dispatch:
+    inputs:
+      image-tag:
+        description: "Tag for image"
+        default: "latest"
+        type: string
+        required: true
+jobs:
+  lint-css:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Stylelint
+        run: npm run lint:css
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      -  name: Run Unit Test
+         run: npm run test
+
+  build-image:
+    runs-on: ubuntu-latest
+    needs: [lint-css, unit-tests]
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Export
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          tags: ${{ vars.DOCKER_HUB_IMAGE }}:${{ inputs.image-tag }}
+          outputs: type=docker,dest=/tmp/image.tar
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: image
+          path: /tmp/image.tar
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: [build-image]
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: image
+          path: /tmp
+
+      - name: Load image
+        run: |
+          docker load --input /tmp/image.tar
+          docker image ls -a
+          docker run -p 8002:80 -d ${{ vars.DOCKER_HUB_IMAGE }}:${{ inputs.image-tag }}
+          sleep 5
+          curl --fail 'http://localhost:8002/'
+    
+  vulnerability-scan:
+    runs-on: ubuntu-latest
+    needs: [build-image]
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: image
+          path: /tmp
+
+      - name: Load image
+        run: |
+          docker load --input /tmp/image.tar
+          docker image ls -a
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ vars.DOCKER_HUB_IMAGE }}:${{ inputs.image-tag }}
+          format: 'json'
+          output: 'trivy-results.json'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-results
+          path: ${{ github.workspace }}/trivy-results.json
+
+  publish-image:
+    runs-on: ubuntu-latest
+    needs: [integration-tests, vulnerability-scan]
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: image
+          path: /tmp
+      - name: Load image
+        run: |
+          docker load --input /tmp/image.tar
+          docker image ls -a
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Docker push image to DockerHub
+        run: |
+          docker push ${{ vars.DOCKER_HUB_IMAGE }}:${{ inputs.image-tag }}
