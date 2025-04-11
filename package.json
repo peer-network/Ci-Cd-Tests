@@ -6,6 +6,7 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "start": "node app.js",
     "prepare": "husky insatll",
     "format": "prettier --write .",
     "lint:css": "stylelint 'Frontend/**/*.css' --ignore-pattern 'coverage/**/*.css'",
