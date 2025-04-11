@@ -81,18 +81,18 @@ jobs:
       - name: Load image
         run: |
           docker load --input /tmp/image.tar
-          docker run -p 8080:80 -d ${{ vars.DOCKER_HUB_IMAGE }}:${{ inputs.image-tag }}
+          docker run -p 8082:80 -d ${{ vars.DOCKER_HUB_IMAGE }}:${{ inputs.image-tag }}
     
           echo "Waiting for app to be ready..."
           for i in {1..30}; do
-            if curl --silent --fail http://localhost:8080/ > /dev/null; then
+            if curl --silent --fail http://localhost:8082/ > /dev/null; then
               echo "App is up!"
               break
             fi
             echo "Still waiting..."
             sleep 2
           done
-          curl --fail http://localhost:8080/
+          curl --fail http://localhost:8082/
 
   vulnerability-scan:
     runs-on: ubuntu-latest
