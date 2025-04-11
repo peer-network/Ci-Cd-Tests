@@ -39,6 +39,9 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Install Dependencies
+        run: npm ci
+
       -  name: Run Unit Test
          run: npm run test
 
