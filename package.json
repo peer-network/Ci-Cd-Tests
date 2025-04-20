@@ -6,10 +6,12 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prepare": "husky insatll",
+    "lint:html": "htmlhint 'Frontend/**/*.html'",
+    "prepare": "husky install",
     "format": "prettier --write .",
     "lint:css": "stylelint 'Frontend/**/*.css' --ignore-pattern 'coverage/**/*.css'",
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "test:e2e": "playwright test"
   },
   "jest": {
     "testEnvironment": "jsdom"
@@ -19,13 +21,17 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@playwright/test": "^1.51.1",
     "eslint": "^9.23.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.6",
+    "htmlhint": "^1.1.4",
     "husky": "^9.1.7",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
+    "playwright": "^1.51.1",
     "prettier": "^3.5.3",
+    "serve": "^14.2.4",
     "stylelint": "^16.18.0",
     "stylelint-config-standard": "^38.0.0"
   }
