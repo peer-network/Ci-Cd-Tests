@@ -5,3 +5,4 @@ coverage/
 .husky
 test-results/
 ci-example@1.0.0
+htmlhint/
